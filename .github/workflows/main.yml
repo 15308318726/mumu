@@ -1,46 +1,18 @@
-name: Build Kivy Android APK
-on: [push, workflow_dispatch]
+name: Simple Build APK
+on: workflow_dispatch
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
-      - name: Install system dependencies
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt update
-          sudo apt install -y \
-            build-essential \
-            ccache \
-            git \
-            libncurses5:i386 \
-            libstdc++6:i386 \
-            libgtk2.0-0:i386 \
-            libpangox-1.0-0:i386 \
-            libpangoxft-1.0-0:i386 \
-            libidn11:i386 \
-            python3-pip \
-            python3-setuptools \
-            python3-dev \
-            zlib1g:i386 \
-            openjdk-17-jdk \
-            unzip \
-            wget \
-            gradle \
-            cython
-      - name: Install Python dependencies
-        run: |
-          pip3 install --upgrade pip
-          pip3 install buildozer
-      - name: Build APK
-        run: |
+          python-version: 3.8
+      - run: |
+          pip install buildozer cython
+          sudo apt update && sudo apt install -y openjdk-8-jdk unzip
           buildozer android debug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
-          name: kivy-apk
+          name: apk
           path: bin/*.apk
