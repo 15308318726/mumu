@@ -1,50 +1,23 @@
-name: Build AutoCard APK
-on: workflow_dispatch  # 仅手动触发
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.8'
-      - name: Install system dependencies
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt update -y
-          sudo apt install -y \
-            build-essential \
-            ccache \
-            git \
-            libncurses5:i386 \
-            libstdc++6:i386 \
-            libgtk2.0-0:i386 \
-            libpangox-1.0-0:i386 \
-            libpangoxft-1.0-0:i386 \
-            libidn11:i386 \
-            python3-pip \
-            python3-setuptools \
-            python3-dev \
-            zlib1g:i386 \
-            openjdk-17-jdk \
-            unzip \
-            wget \
-            gradle \
-            cython \
-            android-sdk-platform-tools-common
-      - name: Configure Buildozer
-        run: |
-          pip install --upgrade pip
-          pip install buildozer kivy==2.3.0 kivymd==1.2.0 requests
-          # 手动指定NDK/SDK版本，匹配buildozer.spec
-          echo "export ANDROIDNDK='/home/runner/.buildozer/android/platform/android-ndk-r25b'" >> ~/.bashrc
-          echo "export ANDROIDSDK='/home/runner/.buildozer/android/platform/android-sdk'" >> ~/.bashrc
-          source ~/.bashrc
-      - name: Build APK
-        run: buildozer android debug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: autocard-apk
-          path: bin/*.apk
+- name: Install system dependencies
+  run: |
+    sudo dpkg --add-architecture i386
+    sudo apt update -y
+    # 仅保留Ubuntu 22.04可用的核心依赖，移除废弃包
+    sudo apt install -y \
+      build-essential \
+      ccache \
+      git \
+      libncurses5:i386 \
+      libstdc++6:i386 \
+      libgtk2.0-0:i386 \
+      libidn12:i386 \  # 替换废弃的libidn11:i386
+      python3-pip \
+      python3-setuptools \
+      python3-dev \
+      zlib1g:i386 \
+      openjdk-17-jdk \
+      unzip \
+      wget \
+      gradle
+    # Cython通过pip安装（系统apt源无适配包）
+    pip install cython
