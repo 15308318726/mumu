@@ -1,14 +1,25 @@
+# 工作流名称
 name: Build AutoCard APK
-on: workflow_dispatch
+# 仅手动触发，避免自动失败
+on: workflow_dispatch  
+
 jobs:
+  # 唯一的构建任务
   build:
+    # 指定运行环境为Ubuntu 22.04
     runs-on: ubuntu-22.04
+    # 任务步骤
     steps:
+      # 步骤1：拉取仓库代码
       - uses: actions/checkout@v4
+      
+      # 步骤2：配置Python 3.8环境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.8'
+      
+      # 步骤3：安装系统依赖（适配Ubuntu 22.04，移除废弃包）
       - name: Install system dependencies
         run: |
           sudo dpkg --add-architecture i386
@@ -29,22 +40,33 @@ jobs:
             unzip \
             wget \
             gradle
+          # Cython通过pip安装（系统apt源无适配包）
           pip install cython
+      
+      # 步骤4：安装Python依赖（匹配buildozer.spec配置）
       - name: Install Python dependencies
         run: |
           pip install --upgrade pip
           pip install buildozer kivy==2.3.0 kivymd==1.2.0 requests
-     - name: Force NDK 25b
-  run: |
-    # 先创建目标目录（核心修正）
-    mkdir -p /home/runner/.buildozer/android/platform/
-    # 手动下载并指定NDK 25b
-    wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
-    unzip ndk.zip -d /home/runner/.buildozer/android/platform/
-    echo "export ANDROIDNDK=/home/runner/.buildozer/android/platform/android-ndk-r25b" >> ~/.bashrc
-    source ~/.bashrc
+      
+      # 步骤5：强制指定NDK 25b（解决版本兼容+目录缺失）
+      - name: Force NDK 25b (关键！覆盖系统版本)
+        run: |
+          # 先创建目标目录（核心修正：解决解压目录不存在问题）
+          mkdir -p /home/runner/.buildozer/android/platform/
+          # 手动下载NDK 25b（匹配buildozer.spec配置）
+          wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip -O ndk.zip
+          # 解压NDK到指定目录
+          unzip ndk.zip -d /home/runner/.buildozer/android/platform/
+          # 配置环境变量，强制使用NDK 25b
+          echo "export ANDROIDNDK=/home/runner/.buildozer/android/platform/android-ndk-r25b" >> ~/.bashrc
+          source ~/.bashrc
+      
+      # 步骤6：编译APK
       - name: Build APK
         run: buildozer android debug
+      
+      # 步骤7：上传编译好的APK（成功后可下载）
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
