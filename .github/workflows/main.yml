@@ -1,18 +1,50 @@
-name: Simple Build APK
-on: workflow_dispatch
+name: Build AutoCard APK
+on: workflow_dispatch  # 仅手动触发
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.8
-      - run: |
-          pip install buildozer cython
-          sudo apt update && sudo apt install -y openjdk-8-jdk unzip
-          buildozer android debug
-      - uses: actions/upload-artifact@v3
+          python-version: '3.8'
+      - name: Install system dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt update -y
+          sudo apt install -y \
+            build-essential \
+            ccache \
+            git \
+            libncurses5:i386 \
+            libstdc++6:i386 \
+            libgtk2.0-0:i386 \
+            libpangox-1.0-0:i386 \
+            libpangoxft-1.0-0:i386 \
+            libidn11:i386 \
+            python3-pip \
+            python3-setuptools \
+            python3-dev \
+            zlib1g:i386 \
+            openjdk-17-jdk \
+            unzip \
+            wget \
+            gradle \
+            cython \
+            android-sdk-platform-tools-common
+      - name: Configure Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install buildozer kivy==2.3.0 kivymd==1.2.0 requests
+          # 手动指定NDK/SDK版本，匹配buildozer.spec
+          echo "export ANDROIDNDK='/home/runner/.buildozer/android/platform/android-ndk-r25b'" >> ~/.bashrc
+          echo "export ANDROIDSDK='/home/runner/.buildozer/android/platform/android-sdk'" >> ~/.bashrc
+          source ~/.bashrc
+      - name: Build APK
+        run: buildozer android debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: autocard-apk
           path: bin/*.apk
