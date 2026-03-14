@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_description">
+        用于监听微信收款通知，自动提取订单号和金额，触发发卡网自动发卡功能。
+    </string>
+</resources>
