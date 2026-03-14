@@ -11,7 +11,7 @@ requirements = python3,kivy==2.3.0,kivymd==1.2.0,requests
 android.api = 33
 android.ndk = 25b
 android.sdk = 24
-android.archs = arm64-v8a,armeabi-v7a  # 移除注释中的中文和多余空格
+android.archs = arm64-v8a,armeabi-v7a
 
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,ACCESS_NOTIFICATIONS,BIND_ACCESSIBILITY_SERVICE
 
